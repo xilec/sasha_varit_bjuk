@@ -1,0 +1,11 @@
+{
+  "name": "sasha_varit_bju",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.6.4"
+  }
+}

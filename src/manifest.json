@@ -1,0 +1,24 @@
+{
+  "manifest_version": 2,
+  "name": "sasha_varit_bju",
+  "version": "1.0",
+
+  "description": "Добавляет БЖУ панель для сайта 'https://www.edatomsk.ru/'",
+  "icons": {
+    "96": "icons/fat-96.png"
+  },
+
+  "applications": {
+    "gecko": {
+      "id": "sasha_varit_bju@example.com",
+      "strict_min_version": "61.0"
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.edatomsk.ru/*"],
+      "js": ["main.js"]
+    }
+  ]
+}
