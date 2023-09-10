@@ -2,6 +2,8 @@ const main = require('../src/main');
 
 describe('testing parseWeight', () => {
     it.each([
+        [null, null],
+        ['', null],
         ['abcd', null],
         ['100 г. ', 100],
         ['150/180 г. ', 330],
