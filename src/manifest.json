@@ -1,16 +1,16 @@
 {
   "manifest_version": 2,
-  "name": "sasha_varit_bju",
+  "name": "sasha_varit_bjuk",
   "version": "1.0",
 
-  "description": "Добавляет БЖУ панель для сайта 'https://www.edatomsk.ru/'",
+  "description": "Добавляет БЖУК на панель заказа для сайта 'https://www.edatomsk.ru/' и кнопки для более детального разбора формирования БЖУК и составления списка заказа в текстовом виде (сразу копирует в буфер обмена)",
   "icons": {
     "96": "icons/fat-96.png"
   },
 
   "applications": {
     "gecko": {
-      "id": "sasha_varit_bju@example.com",
+      "id": "sasha_varit_bjuk@plugin.com",
       "strict_min_version": "61.0"
     }
   },
@@ -18,7 +18,8 @@
   "content_scripts": [
     {
       "matches": ["https://www.edatomsk.ru/*"],
-      "js": ["main.js"]
+      "js": ["main.js"],
+      "css": ["bjuk.css"]
     }
   ]
 }

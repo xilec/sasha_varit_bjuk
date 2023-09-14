@@ -1,0 +1,32 @@
+dialog table {
+    border-collapse: collapse;
+}
+
+dialog table th {
+    padding: 5px;
+    border: 1px solid black;
+}
+
+dialog table td {
+    padding: 5px;
+    border: 1px solid black;
+}
+
+dialog table tr:nth-child(odd) td{
+    background:#ccc;
+}
+dialog table tr:nth-child(even) td{
+    background:#fff;
+}
+
+dialog table tr:first-child td {
+    align-content:flex-start
+}
+
+dialog table th {
+    font-weight: bold;
+}
+
+dialog button {
+    margin-top: 10px;
+}
