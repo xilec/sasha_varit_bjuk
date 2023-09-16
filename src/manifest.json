@@ -3,7 +3,7 @@
   "name": "sasha_varit_bjuk",
   "version": "1.0",
 
-  "description": "Добавляет БЖУК на панель заказа для сайта 'https://www.edatomsk.ru/' и кнопки для более детального разбора формирования БЖУК и составления списка заказа в текстовом виде (сразу копирует в буфер обмена)",
+  "description": "Calculate proteins, fat, carbs and calories for order on site 'https://www.edatomsk.ru/' (updated on orders chagnes)",
   "icons": {
     "96": "icons/fat-96.png"
   },
