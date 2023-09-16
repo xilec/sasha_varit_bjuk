@@ -326,7 +326,7 @@ function addedBjukDetailsDialog(bjuk_details_id) {
             } else {
                 // composite
                 // in this case portions there is all always
-                table.insertRow().insertAdjacentHTML('beforeend', `<td colspan="7">Порции ${x.portions}</td>`)
+                table.insertRow().insertAdjacentHTML('beforeend', `<td colspan="7">В один контейнер (порции) X ${x.portions}</td>`)
 
                 if (!mainBjukPart) {
                     console.error(`Not found bjuk for main part ${mainPart.name}`);
