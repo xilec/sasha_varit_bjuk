@@ -388,6 +388,7 @@ if (this["document"]) {
     const bjuk_details_id = 'bjuk_details';
     const bjuk_order_id = 'bjuk_order';
 
+    // add Elements to show calculated proteins, fat, carbs and calories
     let bjuk_div = document.getElementById(bjuk_div_id);
     if (bjuk_div) {
         bjuk_div.remove();
@@ -402,22 +403,25 @@ if (this["document"]) {
     `);
     bjukLbl = document.getElementById(bjuk_lbl_id);
 
+    // show order in text form
     let show_order = document.getElementById(bjuk_order_id);
     const totalSumElement = document.getElementById('cartlist_totalsum');
     show_order.addEventListener('click', async () => {
         const orderStr = toOrderListString(cartList, totalSumElement.innerText);
         await navigator.clipboard.writeText(orderStr);
         alert(orderStr);
-    })
+    });
 
     const observerConfig = {attributes: true, childList:true, subtree: true};
 
+    // handle changing order
     const totalSumObserver = new MutationObserver(() => {
         recalculateCartList();
         updateBjukLbl();
     });
     totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
 
+    // handle changing in menu
     const menu_list_id = 'list_snack_d';
     const menuListObserver = new MutationObserver(e => {
         e.forEach(x => {
@@ -450,6 +454,7 @@ if (this["document"]) {
    
     addedBjukDetailsDialog(bjuk_details_id);
 
+    // calculation of initial state
     recalucationBjukList();
     recalculateCartList();
     updateBjukLbl();
