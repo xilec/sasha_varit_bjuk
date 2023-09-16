@@ -234,7 +234,7 @@ function toOrderListString(cartList, totalSum) {
             ? Number.isNaN(x.portions)
                 ? `- ${x.main.count} X ${x.main.name}`
                 : `- ${x.main.count} X (порции) ${x.portions} ${x.main.name}`
-            : `- (порции) ${x.portions} X ⤵\n\t- ${x.main.count} X ${x.main.name}\n\t- ${x.second.count} X ${x.second.name}`).join('\n') + `\nСумма: ${totalSum}p`;
+            : `- В один контейнер (порции) ${x.portions} X ⤵\n\t- ${x.main.count} X ${x.main.name}\n\t- ${x.second.count} X ${x.second.name}`).join('\n') + `\nСумма: ${totalSum}p`;
 }
 
 
