@@ -432,7 +432,10 @@ if (this["document"]) {
         recalculateCartList();
         updateBjukLbl();
 
-        menuListObserver.observe(document.getElementById(menu_list_id), observerConfig);
+        let menuElement = document.getElementById(menu_list_id);
+        if (menuElement) {
+            menuListObserver.observe(menuElement, observerConfig);
+        }
         totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
     });
     
