@@ -8,9 +8,9 @@
     "96": "icons/fat-96.png"
   },
 
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
-      "id": "sasha_varit_bjuk@plugin.com",
+      "id": "{8BAA29CA-3F0A-4C2D-9597-1F302D75AC55}",
       "strict_min_version": "61.0"
     }
   },
