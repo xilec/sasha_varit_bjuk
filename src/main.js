@@ -418,32 +418,33 @@ if (this["document"]) {
     });
     totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
 
-    
-    const switchPageWaiter = new SwitchPageWaiter(() => {
-        recalucationBjukList();
-        recalculateCartList();
-        updateBjukLbl();
-
-        totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
-    });
-    
-    const menuBarObserver = new MutationObserver(() => {
-        totalSumObserver.disconnect()
-        switchPageWaiter.startWaiting();
-    })
-    menuBarObserver.observe(document.querySelector('div[class="menubar__slider"]'), observerConfig);
-    
     const menu_list_id = 'list_snack_d';
-
-    let menuListObserver = new MutationObserver(e => {
+    const menuListObserver = new MutationObserver(e => {
         e.forEach(x => {
             if (x.target.classList.contains('menulistItem') && x.type === 'attributes') {
                 switchPageWaiter.markHasChanges();
             }
         });
     });
-    menuListObserver.observe(document.getElementById(menu_list_id), observerConfig)
 
+    const switchPageWaiter = new SwitchPageWaiter(() => {
+        recalucationBjukList();
+        recalculateCartList();
+        updateBjukLbl();
+
+        menuListObserver.observe(document.getElementById(menu_list_id), observerConfig);
+        totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
+    });
+    
+    const menuBarObserver = new MutationObserver(() => {
+        menuListObserver.disconnect();
+        totalSumObserver.disconnect();
+        
+        switchPageWaiter.startWaiting();
+    })
+    menuBarObserver.observe(document.querySelector('div[class="menubar__slider"]'), observerConfig);
+    
+   
     addedBjukDetailsDialog(bjuk_details_id);
 
     recalucationBjukList();
