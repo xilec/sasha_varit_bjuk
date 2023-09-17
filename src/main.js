@@ -275,14 +275,14 @@ function addedBjukDetailsDialog(bjuk_details_id) {
 
     let details = document.getElementById(bjuk_details_id);
     details.addEventListener('click', () => {
-        let table = document.getElementById(details_table_id);
+        const table = document.getElementById(details_table_id);
 
         const valStr = (val, sum, isSumExists) => {
             if (!val) {
                 return '-';
             }
 
-            return `${val.toFixed(1)} (${isSumExists ? sum.toFixed(1) : ''}) `;
+            return `${val.toFixed(1)}${isSumExists ? ` (${sum.toFixed(1)})` : ''}`;
         };
 
         const addRow = (table, bjukPart, part, cartItem, isComplex) => {
