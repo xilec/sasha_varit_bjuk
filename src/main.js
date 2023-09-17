@@ -278,7 +278,7 @@ function addedBjukDetailsDialog(bjuk_details_id) {
         const table = document.getElementById(details_table_id);
 
         const valStr = (val, sum, isSumExists) => {
-            if (!val) {
+            if (!val && val !== 0) {
                 return '-';
             }
 
