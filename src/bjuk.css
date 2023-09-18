@@ -13,7 +13,7 @@ dialog table td {
 }
 
 dialog table tr:nth-child(odd) td{
-    background:#ccc;
+    background:#ddd;
 }
 dialog table tr:nth-child(even) td{
     background:#fff;
