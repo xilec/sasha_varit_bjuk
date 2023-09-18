@@ -377,29 +377,6 @@ function addedBjukDetailsDialog(bjuk_details_id) {
     });
 }
 
-class SwitchPageWaiter {
-    hasChanges = false;
-    finishedCallback = null;     
-    
-    constructor(finishedCallback) {
-        this.finishedCallback = finishedCallback;
-    }    
-    markHasChanges() {
-        this.hasChanges = true;
-    }
-    
-    startWaiting() {
-        setTimeout(() => {
-            if (this.hasChanges) {
-                this.hasChanges = false;
-                this.startWaiting()
-            } else {
-                this.finishedCallback?.();
-            }
-        }, 400);
-    }
-}
-
 // to not run script in tests
 if (this["document"]) {
     const bjuk_div_id = 'bjuk_div';
@@ -440,33 +417,18 @@ if (this["document"]) {
     });
     totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
 
-    // handle changing in menu
-    const menu_list_id = 'list_snack_d';
-    const menuListObserver = new MutationObserver(e => {
-        e.forEach(x => {
-            if (x.target.classList.contains('menulistItem') && x.type === 'attributes') {
-                switchPageWaiter.markHasChanges();
-            }
-        });
-    });
-
-    const switchPageWaiter = new SwitchPageWaiter(() => {
-        recalucationBjukList();
-        recalculateCartList();
-        updateBjukLbl();
-
-        let menuElement = document.getElementById(menu_list_id);
-        if (menuElement) {
-            menuListObserver.observe(menuElement, observerConfig);
-        }
-        totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
-    });
-    
+    // detection of changing selected day
     const menuBarObserver = new MutationObserver(() => {
-        menuListObserver.disconnect();
         totalSumObserver.disconnect();
         
-        switchPageWaiter.startWaiting();
+        setTimeout(() => {
+            // update menu after changing current day
+            recalucationBjukList();
+            recalculateCartList();
+            updateBjukLbl();
+
+            totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
+        }, 700)
     })
     menuBarObserver.observe(document.querySelector('div[class="menubar__slider"]'), observerConfig);
     
