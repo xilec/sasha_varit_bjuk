@@ -114,15 +114,34 @@ const parseMenuBjuk = bjuElements => new Map(Array.from(bjuElements).map(x => {
 }));
 
 function parseCardPriceCount(cartItemElement, partSuffix) {
-    let cartlist = cartItemElement.querySelector(`div[class='cartlist_${partSuffix}']`);
+    const cartlist = cartItemElement.querySelector(`div[class='cartlist_${partSuffix}']`);
     if (!cartlist) {
         return null;
     }
 
+    const cartlist_name_class = `cartlist_${partSuffix}name`;
+    const cartlist_name = cartlist.querySelector(`.${cartlist_name_class}`);
+    if (!cartlist_name) {
+        console.error(`Not found node with class ${cartlist_name_class}`);
+        return null;
+    }
+    
+    const cartlist_price_class = 'cartlist_price';
+    const cartlist_price = cartlist.querySelector(`.${cartlist_price_class}`);
+    if (!cartlist_price) {
+        console.error(`Not found node with class ${cartlist_price_class}`);
+        return null;
+    }
+    const cartlist_value_class = 'cartlist_value';
+    const cartlist_value = cartlist.querySelector(`.${cartlist_value_class}`);
+    if (!cartlist_value) {
+        console.error(`Not found node with class ${cartlist_value_class}`);
+    }
+    
     return {
-        name: String(cartlist.querySelector(`div[class='cartlist_${partSuffix}name']`).innerText),
-        price: Number(cartlist.querySelector(`div[class='cartlist_price']`).innerText),
-        count: parseInt(cartlist.querySelector(`div[class='cartlist_value']`).innerText),
+        name: String(cartlist_name.innerText),
+        price: Number(cartlist_price.innerText),
+        count: parseInt(cartlist_value.innerText),
     }
 }
 
