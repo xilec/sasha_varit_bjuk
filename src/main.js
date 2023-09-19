@@ -2,7 +2,7 @@
 let bjukLbl;
 
 // shared state
-let bjukList;
+let bjukMap;
 let cartList;
 
 function emptyBjuk() {
@@ -137,11 +137,15 @@ function parseCardPriceCount(cartItemElement, partSuffix) {
     if (!cartlist_value) {
         console.error(`Not found node with class ${cartlist_value_class}`);
     }
-    
+
+    // skip class 'dishIsMissing'
+    const is_missing = cartlist_name.classList.contains('dishIsMissing');
     return {
         name: String(cartlist_name.innerText),
         price: Number(cartlist_price.innerText),
         count: parseInt(cartlist_value.innerText),
+        is_missing,
+        need_skip: is_missing,
     }
 }
 
@@ -185,36 +189,19 @@ function getItemBjukSum(bjukList, cartItem) {
         completed: false, // some part of needed description os absent on page
     };
 
-    const mainPart = cartItem.main;
-    let mainBjukPart = bjukList.get(mainPart.name);
-    if (!mainBjukPart) {
-        console.error(`Not found bjuk for main part ${mainPart.name}`);
+    if (!tryAddBjukToCartItem(bjukList, cartItem.main, 'main', res)) {
         return res;
     }
-    
-    if (!tryAddBjukToCartItem(mainBjukPart, mainPart.count, mainBjukPart.weight, res)) {
-        return res;
+
+    const secondPart = cartItem.second;
+    // second part is optional
+    if (secondPart) {
+        if (!tryAddBjukToCartItem(bjukList, secondPart, 'second', res)) {
+            return res;
+        }
     }
 
     let portions = Number.isNaN(cartItem.portions) ? 1 : cartItem.portions;
-    const secondPart = cartItem.second;
-    if (!secondPart) {
-        res.bjuk = res.bjuk.mult(portions);
-
-        // for main part there is all needed definitions
-        res.completed = true;
-
-        return res;
-    }
-    
-    let secondBjukPart = bjukList.get(secondPart.name);
-    // second part is optional
-    if (!secondBjukPart) {
-        console.error(`Not found bjuk for second part ${mainPart.name}`);
-        return res;
-    } else if (!tryAddBjukToCartItem(secondBjukPart, secondPart.count, secondBjukPart.weight, res)) {
-        return res;
-    }
     res.bjuk = res.bjuk.mult(portions);
 
     res.completed = true;
@@ -222,14 +209,24 @@ function getItemBjukSum(bjukList, cartItem) {
     return res
 }
 
-function tryAddBjukToCartItem(bjukPart, count, weight, res) {
+function tryAddBjukToCartItem(bjukList, cartPart, partDescription, res) {
+    let bjukPart = bjukList.get(cartPart.name);
+    if (cartPart.need_skip) {
+        return true;
+    }
+    
+    if (!bjukPart) {
+        console.error(`Not found bjuk for ${partDescription} part ${cartPart.name}`);
+        return res;
+    }
+
     if (!bjukPart.bjuk || !bjukPart.weight) {
         return false;
     }
 
     // bjuk specified by 100 gr
-    res.bjuk = res.bjuk.add(bjukPart.bjuk.mult(weight / 100 * count))
-    
+    res.bjuk = res.bjuk.add(bjukPart.bjuk.mult(cartPart.count * bjukPart.weight / 100))
+
     return true;
 }
 
@@ -257,17 +254,26 @@ function toOrderListString(cartList, totalSum) {
 }
 
 
-let recalucationBjukList = () => {
-    bjukList = parseMenuBjuk(document.querySelectorAll("div[class='menulistItem__info']"));
+const recalucationBjukList = () => {
+    bjukMap = parseMenuBjuk(document.querySelectorAll("div[class='menulistItem__info']"));
 }
 
-function updateBjukLbl() {
-    bjukLbl.innerText = toBjukShortString(bjukList, cartList);
+const checkMenuContainsAllItems = cartList => {
+    const checkMenuPart = part => {
+        return !part.need_skip && !!bjukMap.get(part.name);
+    };
+
+    return cartList.every(x => checkMenuPart(x.main) && (!x.second || checkMenuPart(x.second)))
 }
 
-function recalculateCartList() {
-    cartList = parseCardList(document.querySelectorAll("div[class='cartlist_item']"));
-}
+const updateBjukLbl = () => {
+    const cartlist = parseCardList(document.querySelectorAll("div[class='cartlist_item']"));
+    cartList = cartlist;
+    if (!checkMenuContainsAllItems(cartlist)) {
+        recalucationBjukList();
+    }
+    bjukLbl.innerText = toBjukShortString(bjukMap, cartlist);
+};
 
 function addedBjukDetailsDialog(bjuk_details_id) {
     const dialog_id = 'bjuk_dialog';
@@ -304,19 +310,25 @@ function addedBjukDetailsDialog(bjuk_details_id) {
             return `${val.toFixed(1)}${isSumExists ? ` (${sum.toFixed(1)})` : ''}`;
         };
 
-        const addRow = (table, bjukPart, part, cartItem, isComplex) => {
-            let totalCount = Number.isNaN(cartItem.portions) ? part.count : part.count * cartItem.portions;
-            let wk = bjukPart?.weight / 100 * totalCount;
+        const addRow = (table, bjukMap, cartItem, cartPart, partDescription, isComplex) => {
+            let bjukPart = bjukMap.get(cartPart.name);
+            if (!cartPart.need_skip && !bjukPart) {
+                console.error(`Not found bjuk for ${partDescription} part ${cartItem.name}`);
+            }
+
+            let portions = Number.isNaN(cartItem.portions) ? 1 : cartItem.portions;
+            let wk = cartPart.count * portions * bjukPart?.weight / 100;
 
             let sum = {
                 bjuk: emptyBjuk(),
                 completed: false,
             };
-            let isSum = bjukPart ? tryAddBjukToCartItem(bjukPart, totalCount, bjukPart.weight, sum) : false;
+            let isSum = bjukPart ? tryAddBjukToCartItem(bjukMap, cartPart, partDescription, sum) : false;
+            sum.bjuk = sum.bjuk.mult(portions);
 
             table.insertRow().insertAdjacentHTML('beforeend', `
-                <td style="${isComplex ? 'padding-left:20px' : ''}">${part.name}</td>
-                <td>${part.count}${Number.isNaN(cartItem.portions) ? '' : ` (${part.count * cartItem.portions})`}</td>
+                <td style="${isComplex ? 'padding-left:20px' : ''}">${cartPart.name}</td>
+                <td>${cartPart.count}${Number.isNaN(cartItem.portions) ? '' : ` (${cartPart.count * cartItem.portions})`}</td>
                 <td>${valStr(bjukPart?.weight, wk, wk !== null)}</td>
                 <td>${valStr(bjukPart?.bjuk?.protein, sum?.bjuk?.protein, isSum)}</td>
                 <td>${valStr(bjukPart?.bjuk?.fat, sum?.bjuk?.fat, isSum)}</td>
@@ -329,39 +341,24 @@ function addedBjukDetailsDialog(bjuk_details_id) {
         // not removing row with headers
         Array.from(table.rows).slice(1).map(x => x.remove());
 
-        cartList.forEach(x => {
-            const mainPart = x.main;
-            const secondPart = x.second;
-
-            let mainBjukPart = bjukList.get(mainPart.name);
+        cartList.forEach(cartItem => {
+            const mainPart = cartItem.main;
+            const secondPart = cartItem.second;
 
             if (!secondPart) {
                 // single
-                if (!mainBjukPart) {
-                    console.error(`Not found bjuk for main part ${mainPart.name}`);
-                }
-
-                addRow(table, mainBjukPart, mainPart, x, false);
+                addRow(table, bjukMap, cartItem, mainPart, 'main', false);
             } else {
                 // composite
                 // in this case portions there is all always
-                table.insertRow().insertAdjacentHTML('beforeend', `<td colspan="7">В один контейнер (порции) X ${x.portions}</td>`)
+                table.insertRow().insertAdjacentHTML('beforeend', `<td colspan="7">В один контейнер (порции) X ${cartItem.portions}</td>`)
 
-                if (!mainBjukPart) {
-                    console.error(`Not found bjuk for main part ${mainPart.name}`);
-                }
-
-                let secondBjukPart = bjukList.get(secondPart.name);
-                if (!secondBjukPart) {
-                    console.error(`Not found bjuk for main part ${mainPart.name}`);
-                }
-
-                addRow(table, mainBjukPart, mainPart, x, true);
-                addRow(table, secondBjukPart, secondPart, x, true);
+                addRow(table, bjukMap, cartItem, mainPart, 'main', true);
+                addRow(table, bjukMap, cartItem, secondPart, 'second', true);
             }
         });
 
-        let res = calculateBjukTotalSum(bjukList, cartList);
+        let res = calculateBjukTotalSum(bjukMap, cartList);
 
         table.insertRow().insertAdjacentHTML('beforeend', `
         <td style="font-weight: bold">Cумма</td>
@@ -412,7 +409,6 @@ if (this["document"]) {
 
     // handle changing order
     const totalSumObserver = new MutationObserver(() => {
-        recalculateCartList();
         updateBjukLbl();
     });
     totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
@@ -424,7 +420,6 @@ if (this["document"]) {
         setTimeout(() => {
             // update menu after changing current day
             recalucationBjukList();
-            recalculateCartList();
             updateBjukLbl();
 
             totalSumObserver.observe(totalSumElement, {attributes: false, childList:true, subtree: false});
@@ -437,7 +432,6 @@ if (this["document"]) {
 
     // calculation of initial state
     recalucationBjukList();
-    recalculateCartList();
     updateBjukLbl();
 }
 
