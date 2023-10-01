@@ -152,17 +152,15 @@ function parseCardPriceCount(cartItemElement, partSuffix) {
 function parseCartItem(cartItemElement) {
     let totalElement = cartItemElement.querySelector("div[class='cartlist_total']");
 
-    const second = parseCardPriceCount(cartItemElement, "second");
-    const portionsElement = totalElement.querySelector("div[class='cartlist_value']");
-    
-    let portions = portionsElement && !portionsElement.isHidden
+    const portionsElement = totalElement?.querySelector("div[class='cartlist_value']");
+    let portions = portionsElement && !(totalElement?.querySelector("div[class='cartlist_count']")?.style.visibility === "hidden")
         ? Number(portionsElement.innerText)
         : Number.NaN;
     
     portions = portions === 0 ? Number.NaN : portions;
     return {
         main: parseCardPriceCount(cartItemElement, "main"),
-        second,
+        second: parseCardPriceCount(cartItemElement, "second"),
         portions,
         totalPrice: Number(totalElement.querySelector("div[class='cartlist_totalvalue']").innerText),
     };
